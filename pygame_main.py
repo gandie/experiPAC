@@ -23,10 +23,8 @@ def main():
     resolution = (800, 800)
 
     screen = pygame.display.set_mode(resolution)
-
-    pygame.display.set_caption("experiPAC")
+    pygame.display.set_caption("experiPAC - BETA")
     pygame.mouse.set_visible(1)
-
     pygame.font.init()
 
     fontlist = pygame.font.get_fonts()

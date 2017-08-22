@@ -17,7 +17,6 @@ class FieldHandler(object):
         self.grid_size = 30
         self.field_size = resolution[0] / self.grid_size
 
-
         self.grid = Grid(size_x=self.field_size, size_y=self.field_size)
         self.load_map()
 
@@ -38,7 +37,6 @@ class FieldHandler(object):
             print 'POWERUP FIELD'
             powerup_field = random.choice(self.grid.fields)
         self.powerup = PowerUp(grid=self.grid, field=powerup_field)
-        # self.create_walls()
 
     def load_map(self):
         with open('pac_map.json', 'r') as save_map:

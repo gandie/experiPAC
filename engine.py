@@ -39,7 +39,6 @@ class Grid(object):
 
     def add_food(self):
         for f in range(self.food_quant):
-            # TODO: food vs blocked fields
             field = random.choice(self.fields)
             field.food = random.randint(self.min_food, self.max_food)
 
