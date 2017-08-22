@@ -6,6 +6,7 @@ import pygame
 import time
 import random
 import json
+import sys
 
 
 class FieldHandler(object):
@@ -16,24 +17,28 @@ class FieldHandler(object):
         self.grid_size = 30
         self.field_size = resolution[0] / self.grid_size
 
+
         self.grid = Grid(size_x=self.field_size, size_y=self.field_size)
+        self.load_map()
+
         player_field = random.choice(self.grid.fields)
         while player_field.blocked is True:
+            print 'PLAYER FIELD'
             player_field = random.choice(self.grid.fields)
         self.player = Player(grid=self.grid, field=player_field)
 
         enemy_field = random.choice(self.grid.fields)
         while enemy_field.blocked is True:
+            print 'ENEMY FIELD'
             enemy_field = random.choice(self.grid.fields)
         self.enemy = Enemy(grid=self.grid, field=enemy_field)
 
         powerup_field = random.choice(self.grid.fields)
         while powerup_field.blocked is True:
+            print 'POWERUP FIELD'
             powerup_field = random.choice(self.grid.fields)
         self.powerup = PowerUp(grid=self.grid, field=powerup_field)
         # self.create_walls()
-
-        self.load_map()
 
     def load_map(self):
         with open('pac_map.json', 'r') as save_map:
@@ -81,8 +86,10 @@ class FieldHandler(object):
         collision = self.player.field == self.enemy.field
         if collision and self.player.powerupped is False:
             print 'GAME OVER'
+            sys.exit(0)
         elif collision and self.player.powerupped is True:
             print 'WIN!'
+            sys.exit(0)
 
         collision_powerup = self.player.field == self.powerup.field
         if collision_powerup is True:
