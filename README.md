@@ -1,11 +1,11 @@
 # experiPAC
 PACMAN clone
 
-################
-# INSTALLATION #
-################
+#########################
+# INSTALLATION ON LINUX #
+#########################
 
 Requirements:
--pygame (pip install pygame)
+-pygame (sudo pip install pygame)
 
 Clone the repository, then run "python pygame_main.py"
