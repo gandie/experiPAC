@@ -18,18 +18,13 @@ class Field(object):
 
 class Grid(object):
 
-    def __init__(self, size_x=10, size_y=10, food_quant=1,
-                 min_food=1000, max_food=5000):
+    def __init__(self, size_x=10, size_y=10, food_quant=1):
         self.size_x = size_x
         self.size_y = size_y
         self.food_quant = food_quant
-        self.min_food = min_food
-        self.max_food = max_food
 
         self.fields = []
         self.create()
-        self.add_food()
-        self.add_home()
 
         self.init_neighbours()
 
@@ -44,6 +39,7 @@ class Grid(object):
 
     def add_food(self):
         for f in range(self.food_quant):
+            # TODO: food vs blocked fields
             field = random.choice(self.fields)
             field.food = random.randint(self.min_food, self.max_food)
 
@@ -85,15 +81,59 @@ class Grid(object):
             result.append(field)
         return result
 
-    def decay_paths(self):
-        for field in self.fields:
-            for neighbour in field.neighbours:
-                if neighbour[1] > 0:
-                    neighbour[1] *= 0.5
-                if neighbour[2] > 0:
-                    neighbour[2] *= 0.5
+
+class Player(object):
+
+    def __init__(self, grid=None, field=None):
+        self.field = field
+        self.grid = grid
+        self.lives = 4
+
+        self.powerupped = False
+
+    def move(self, x_dir=0, y_dir=0):
+        x_cur = self.field.x
+        y_cur = self.field.y
+
+        x_next = x_cur + x_dir
+        y_next = y_cur + y_dir
+
+        new_field = self.grid.get_field_c(x_next, y_next)
+
+        if new_field is None:
+            print 'Field does not exist!'
+            return
+
+        if new_field.blocked is True:
+            print 'Field is blocked'
+            return
+
+        self.field = new_field
 
 
+class Enemy(object):
+
+    def __init__(self, grid=None, field=None):
+        self.field = field
+        self.grid = grid
+
+    def move(self):
+        new_fields = [
+            f[0] for f in self.field.neighbours if f[0].blocked is False
+        ]
+        if len(new_fields) > 0:
+            new_field = random.choice(new_fields)
+            self.field = new_field
+        return
+
+
+class PowerUp(object):
+    def __init__(self, grid=None, field=None):
+        self.field = field
+        self.grid = grid
+
+
+'''
 class Ant(object):
 
     def __init__(self, field=None, origin=None, home=None, engine=None,
@@ -299,3 +339,4 @@ if __name__ == '__main__':
             time.sleep(0.2)
         except KeyboardInterrupt:
             break
+'''
