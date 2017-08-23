@@ -15,6 +15,10 @@ WHEELUP=4
 WHEELDOWN=5
 
 GAME_TIME = 60
+enemy_movement = 5
+UP_TIME = 5
+
+END_LABEL = None
 
 def main():
 
@@ -38,51 +42,59 @@ def main():
         resolution=resolution
     )
 
-    ticks = 0
+    fieldhandler.ticks = 0
 
     label = PygameLabel('Time:', (255, 255, 255), (700, 0), 20, font)
 
-    running = True
+    fieldhandler.game_running = True
+    fieldhandler.window_running = True
     start_time = time.time()
 
-    while running:
+    while fieldhandler.window_running is True:
 
-        cur_time = (start_time - time.time()) * (-1)
-        print cur_time
-        if cur_time > GAME_TIME:
-            label.text = 'GAME OVER!'
-            print 'foo'
-        else:
-            label.text = str(round(cur_time, 2))
+        if fieldhandler.game_running is True:
 
-        ticks += 1
-        clock.tick(FPS)
-        background = pygame.Surface(resolution)
-        background.fill((0,0,0))
-        background = background.convert()
+            fieldhandler.cur_time = (start_time - time.time()) * (-1)
+            #print round(fieldhandler.cur_time, 2)
+            if fieldhandler.cur_time > GAME_TIME:
+                label.text = 'GAME OVER!'
+            else:
+                label.text = str(round(fieldhandler.cur_time, 2))
 
-        # temporary surface to draw things to
-        display = pygame.Surface(resolution)
-        display.fill((0,0,0))
-        display = display.convert()
+            fieldhandler.ticks += 1
+            clock.tick(FPS)
+            background = pygame.Surface(resolution)
+            background.fill((0,0,0))
+            background = background.convert()
 
-        display.blit(background, (0,0))
+            # temporary surface to draw things to
+            display = pygame.Surface(resolution)
+            display.fill((0,0,0))
+            display = display.convert()
 
-        # put display to draw method
-        display = fieldhandler.draw_fields(display)
-        #label.text = str(round(cur_time, 2))
-        label.draw(0)
-        display.blit(label.surface, (label.position[0], label.position[1]))
+            display.blit(background, (0,0))
 
-        screen.blit(display, (0,0))
+            # put display to draw method
+            fieldhandler.check_collision()
+            display = fieldhandler.draw_fields(display)
+            #label.text = str(round(cur_time, 2))
+            label.draw(0)
+            display.blit(label.surface, (label.position[0], label.position[1]))
 
-        #    fieldhandler.enemy.move()
-        if ticks % 10 == 0:
-            for enemy in fieldhandler.enemies:
-                enemy.move()
+            #if END_LABEL is not None:
+            #    display.blit(END_LABEL.surface, (END_LABEL.position[0], END_LABEL.position[1]))
 
-        if ticks % 100 == 0:
-            print 'POWERUP'
+            screen.blit(display, (0,0))
+
+            #    fieldhandler.enemy.move()
+            if fieldhandler.ticks % enemy_movement == 0:
+                for enemy in fieldhandler.enemies:
+                    enemy.move()
+
+            if fieldhandler.powerup_time is not None:
+                if time.time() - fieldhandler.powerup_time > UP_TIME:
+                    fieldhandler.player.powerupped = False
+                    fieldhandler.powerup_time = None
 
         # look for events
         for event in pygame.event.get():
@@ -101,16 +113,9 @@ def main():
                 with open('pac_map.json', 'w') as save_map:
                     save_map.write(pac_map_json)
 
-                running = False
+                fieldhandler.window_running = False
 
-            '''
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == LEFT:
-                #click_x = event.pos[0]
-                #click_y = event.pos[1]
-                fieldhandler.click(event.pos)
-                print('left mouse button')
-            '''
-            if event.type == pygame.MOUSEBUTTONDOWN and event.button == RIGHT:
                 fieldhandler.right_click(event.pos)
                 print('right mouse button')
 

@@ -8,6 +8,8 @@ import random
 import json
 import sys
 
+ENEMY_COUNT = 5
+
 
 class FieldHandler(object):
 
@@ -16,33 +18,44 @@ class FieldHandler(object):
         self.resoltuion = resolution
         self.grid_size = 30
         self.field_size = resolution[0] / self.grid_size
+        self.cur_time = 0
+        self.powerup_time = None
+        self.game_running = False
+        self.window_running = False
 
         self.grid = Grid(size_x=self.field_size, size_y=self.field_size)
         self.load_map()
 
-        player_field = random.choice(self.grid.fields)
-        while player_field.blocked is True:
-            print 'PLAYER FIELD'
-            player_field = random.choice(self.grid.fields)
-        self.player = Player(grid=self.grid, field=player_field)
+        self.player = Player(
+            grid=self.grid,
+            field=self.get_unblocked_field()
+        )
 
-        powerup_field = random.choice(self.grid.fields)
-        while powerup_field.blocked is True:
-            print 'POWERUP FIELD'
-            powerup_field = random.choice(self.grid.fields)
-        self.powerup = PowerUp(grid=self.grid, field=powerup_field)
+        self.powerup = PowerUp(
+            grid=self.grid,
+            field=self.get_unblocked_field()
+        )
 
         self.enemies = []
-        for i in xrange(10):
+        for i in xrange(ENEMY_COUNT):
             enemy = self.create_ghost()
             self.enemies.append(enemy)
 
+    def get_unblocked_field(self):
+        '''
+        get a field which is not blocked
+        '''
+        field = random.choice(self.grid.fields)
+        while field.blocked is True:
+            print 'POWERUP FIELD'
+            field = random.choice(self.grid.fields)
+        return field
+
     def create_ghost(self):
-        enemy_field = random.choice(self.grid.fields)
-        while enemy_field.blocked is True:
-            print 'ENEMY FIELD'
-            enemy_field = random.choice(self.grid.fields)
-        enemy = Enemy(grid=self.grid, field=enemy_field)
+        enemy = Enemy(
+            grid=self.grid,
+            field=self.get_unblocked_field()
+        )
         return enemy
 
     def load_map(self):
@@ -86,16 +99,30 @@ class FieldHandler(object):
             else:
                 field.blocked = False
 
-    def draw_fields(self, display):
-
-        enemy_fields = [enemy.field for enemy in self.enemies]
-
+    def check_collision(self):
         # time.sleep(0.5)
-        collision = self.player.field in enemy_fields
-        if collision and self.player.powerupped is False:
-            print 'GAME OVER'
-            sys.exit(0)
-        elif collision and self.player.powerupped is True:
+        #collision = self.player.field in enemy_fields
+        dead_enemies = []
+        for enemy in self.enemies:
+            collision = self.player.field == enemy.field
+
+            if collision and self.player.powerupped is False:
+                print 'GAME OVER!'
+                self.game_running = False
+                game_over_label = PygameLabel('GAME OVER', (255,0,0), (300, 400), 100, 'Arial')
+                # pygame_main.END_LABEL = game_over_label
+                # sys.exit(0)
+            elif collision and self.player.powerupped is True:
+                self.player.kills += 1
+                self.player.powerupped = False
+                dead_enemies.append(enemy)
+
+        for enemy in dead_enemies:
+            self.enemies.remove(enemy)
+
+        if self.player.kills == ENEMY_COUNT:
+            with open('highscore.json', 'a') as highscore_file:
+                highscore_file.write(str(self.cur_time) + '\n')
             print 'WIN!'
             sys.exit(0)
 
@@ -103,7 +130,12 @@ class FieldHandler(object):
         if collision_powerup is True:
             print 'POWERUP COLLECTED!'
             self.player.powerupped = True
-            self.powerup.field = None
+            self.powerup_time = time.time()
+            self.powerup.field = self.get_unblocked_field()
+
+    def draw_fields(self, display):
+        enemy_fields = [enemy.field for enemy in self.enemies]
+
         for field in self.grid.fields:
             red = 0
             green = 0
@@ -113,19 +145,19 @@ class FieldHandler(object):
                 (self.field_size, self.field_size)
             )
 
-            if field.home:
-                green = 255
-
-            if field.food > 0:
-                red = 255
-
             if field.blocked:
                 red = 255
                 blue = 255
                 green = 255
 
             if field == self.player.field:
-                blue = 255
+                if self.player.powerupped:
+                    if self.ticks % 2 == 0:
+                        red = 255
+                    else:
+                        blue = 255
+                else:
+                    blue = 255
 
             if field in enemy_fields:
                 red = 255

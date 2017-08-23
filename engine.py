@@ -9,10 +9,7 @@ class Field(object):
                  ):
         self.x = x
         self.y = y
-        self.food = food
         self.blocked = blocked
-        self.home = home
-
         self.neighbours = []
 
 
@@ -87,6 +84,7 @@ class Player(object):
         self.field = field
         self.grid = grid
         self.lives = 4
+        self.kills = 0
 
         self.powerupped = False
 
