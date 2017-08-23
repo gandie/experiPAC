@@ -26,17 +26,24 @@ class FieldHandler(object):
             player_field = random.choice(self.grid.fields)
         self.player = Player(grid=self.grid, field=player_field)
 
-        enemy_field = random.choice(self.grid.fields)
-        while enemy_field.blocked is True:
-            print 'ENEMY FIELD'
-            enemy_field = random.choice(self.grid.fields)
-        self.enemy = Enemy(grid=self.grid, field=enemy_field)
-
         powerup_field = random.choice(self.grid.fields)
         while powerup_field.blocked is True:
             print 'POWERUP FIELD'
             powerup_field = random.choice(self.grid.fields)
         self.powerup = PowerUp(grid=self.grid, field=powerup_field)
+
+        self.enemies = []
+        for i in xrange(10):
+            enemy = self.create_ghost()
+            self.enemies.append(enemy)
+
+    def create_ghost(self):
+        enemy_field = random.choice(self.grid.fields)
+        while enemy_field.blocked is True:
+            print 'ENEMY FIELD'
+            enemy_field = random.choice(self.grid.fields)
+        enemy = Enemy(grid=self.grid, field=enemy_field)
+        return enemy
 
     def load_map(self):
         with open('pac_map.json', 'r') as save_map:
@@ -80,8 +87,11 @@ class FieldHandler(object):
                 field.blocked = False
 
     def draw_fields(self, display):
+
+        enemy_fields = [enemy.field for enemy in self.enemies]
+
         # time.sleep(0.5)
-        collision = self.player.field == self.enemy.field
+        collision = self.player.field in enemy_fields
         if collision and self.player.powerupped is False:
             print 'GAME OVER'
             sys.exit(0)
@@ -117,7 +127,7 @@ class FieldHandler(object):
             if field == self.player.field:
                 blue = 255
 
-            if field == self.enemy.field:
+            if field in enemy_fields:
                 red = 255
                 green = 255
 

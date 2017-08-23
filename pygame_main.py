@@ -76,8 +76,10 @@ def main():
 
         screen.blit(display, (0,0))
 
+        #    fieldhandler.enemy.move()
         if ticks % 10 == 0:
-            fieldhandler.enemy.move()
+            for enemy in fieldhandler.enemies:
+                enemy.move()
 
         if ticks % 100 == 0:
             print 'POWERUP'
